@@ -4,104 +4,96 @@ import numpy as np
 import networkx as nx
 lblout = None
 def ReadTextFromInput(TextData):
-    article = TextData.split(". ")
-    sentences = []
+	article = TextData.split(". ")
+	sentences = []
 
-    for sentence in article:
-        print(sentence)
-        sentences.append(sentence.replace("[^a-zA-Z]", " ").split(" "))
-    sentences.pop() 
-    
-    return sentences
+	for sentence in article:
+		print(sentence)
+		sentences.append(sentence.replace("[^a-zA-Z]", " ").split(" "))
+	sentences.pop() 
+	
+	return sentences
 
 def ReadText(file_name):
-    file = open(file_name, "r")
-    filedata = file.readlines()
+	file = open(file_name, "r")
+	filedata = file.readlines()
 
 
-    article = filedata[0].split(". ")
-    sentences = []
-    global txt
-    txt.delete(1.0,"end")
-    txt.insert(1.0, filedata[0])
-    for sentence in article:
-        print(sentence)
-        sentences.append(sentence.replace("[^a-zA-Z]", " ").split(" "))
-    sentences.pop() 
-    
-    return sentences
+	article = filedata[0].split(". ")
+	sentences = []
+	global txt
+	txt.delete(1.0,"end")
+	txt.insert(1.0, filedata[0])
+	for sentence in article:
+		print(sentence)
+		sentences.append(sentence.replace("[^a-zA-Z]", " ").split(" "))
+	sentences.pop() 
+	
+	return sentences
 
 def SentenceSimilarity(sent1, sent2, stopwords=None):
-    if stopwords is None:
-        stopwords = []
+	if stopwords is None:
+		stopwords = []
  
-    sent1 = [w.lower() for w in sent1]
-    sent2 = [w.lower() for w in sent2]
+	sent1 = [w.lower() for w in sent1]
+	sent2 = [w.lower() for w in sent2]
  
-    all_words = list(set(sent1 + sent2))
+	all_words = list(set(sent1 + sent2))
  
-    vector1 = [0] * len(all_words)
-    vector2 = [0] * len(all_words)
+	vector1 = [0] * len(all_words)
+	vector2 = [0] * len(all_words)
  
-    # build the vector for the first sentence
-    for w in sent1:
-        if w in stopwords:
-            continue
-        vector1[all_words.index(w)] += 1
+	for w in sent1:
+		if w in stopwords:
+			continue
+		vector1[all_words.index(w)] += 1
  
-    # build the vector for the second sentence
-    for w in sent2:
-        if w in stopwords:
-            continue
-        vector2[all_words.index(w)] += 1
+	for w in sent2:
+		if w in stopwords:
+			continue
+		vector2[all_words.index(w)] += 1
  
-    return 1 - cosine_distance(vector1, vector2)
+	return 1 - cosine_distance(vector1, vector2)
  
 def BuildSimilarityMatrix(sentences, stop_words):
-    # Create an empty similarity matrix
-    similarity_matrix = np.zeros((len(sentences), len(sentences)))
+	similarity_matrix = np.zeros((len(sentences), len(sentences)))
  
-    for idx1 in range(len(sentences)):
-        for idx2 in range(len(sentences)):
-            if idx1 == idx2: #ignore if both are same sentences
-                continue 
-            similarity_matrix[idx1][idx2] = SentenceSimilarity(sentences[idx1], sentences[idx2], stop_words)
+	for idx1 in range(len(sentences)):
+		for idx2 in range(len(sentences)):
+			if idx1 == idx2: 
+				continue 
+			similarity_matrix[idx1][idx2] = SentenceSimilarity(sentences[idx1], sentences[idx2], stop_words)
 
-    return similarity_matrix
+	return similarity_matrix
 
 
 def GenerateSummary(file_name, top_n=5 , demo = 0):
-    stop_words = stopwords.words('english')
-    summarize_text = []
+	stop_words = stopwords.words('english')
+	summarize_text = []
 
-    # Step 1 - Read text anc split it
-    if demo:
-        sentences =  ReadText(file_name)
-    else:
-        sentences =  ReadTextFromInput(file_name)
+	if demo:
+		sentences =  ReadText(file_name)
+	else:
+		sentences =  ReadTextFromInput(file_name)
 
-    # Step 2 - Generate Similary Martix across sentences
-    SentenceSimilarity_martix = BuildSimilarityMatrix(sentences, stop_words)
+	SentenceSimilarity_martix = BuildSimilarityMatrix(sentences, stop_words)
 
-    # Step 3 - Rank sentences in similarity martix
-    SentenceSimilarity_graph = nx.from_numpy_array(SentenceSimilarity_martix)
-    scores = nx.pagerank(SentenceSimilarity_graph)
+	SentenceSimilarity_graph = nx.from_numpy_array(SentenceSimilarity_martix)
+	scores = nx.pagerank(SentenceSimilarity_graph)
 
-    # Step 4 - Sort the rank and pick top sentences
-    ranked_sentence = sorted(((scores[i],s) for i,s in enumerate(sentences)), reverse=True)    
-    print("Indexes of top ranked_sentence order are ", ranked_sentence)    
-    try:
-        for i in range(top_n):
-          summarize_text.append(" ".join(ranked_sentence[i][1]))
-    except:
-        pass
+	ranked_sentence = sorted(((scores[i],s) for i,s in enumerate(sentences)), reverse=True)    
+	print("Indexes of top ranked_sentence order are ", ranked_sentence)    
+	try:
+		for i in range(top_n):
+		  summarize_text.append(" ".join(ranked_sentence[i][1]))
+	except:
+		pass
 
-        # Step 5 - Offcourse, output the summarize texr
-    print("Summarize Text: \n", ". ".join(summarize_text))
-    return (". ".join(summarize_text))
+	print("Summarize Text: \n", ". ".join(summarize_text))
+	return (". ".join(summarize_text))
 
-# let's begin
-# GenerateSummary( "mytxt2.txt", 2)
+
+#================================================================GUI================================================
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 
@@ -132,18 +124,18 @@ tab2.pack(side = tk.TOP,expand=1, fill=tk.BOTH)
 
 tab3 = tk.Frame(window,relief=tk.RAISED,bd=3,bg=clr2)
 def setTextInput(text):
-    global lblout
-    lblout.delete(1.0,"end")
-    lblout.insert(1.0, text)
+	global lblout
+	lblout.delete(1.0,"end")
+	lblout.insert(1.0, text)
 
 def clicked():
-    res = txt.get('1.0', tk.END)
-    res2 = GenerateSummary(res, 2)
-    setTextInput(res2)
+	res = txt.get('1.0', tk.END)
+	res2 = GenerateSummary(res, 2)
+	setTextInput(res2)
 
 def clicked2():
-    res2 = GenerateSummary("mytxt.txt", 2 , 1)
-    setTextInput(res2)
+	res2 = GenerateSummary("mytxt.txt", 2 , 1)
+	setTextInput(res2)
 btn = tk.Button(tab3, text="Submit Text",font=('Arial', 10,"bold"),bg = clr1,fg=clr3 ,command=clicked)
 btn.grid(row=0, column=0,padx=7,pady=7)
 btn2 = tk.Button(tab3, text="Demo",font=('Arial', 10,"bold"),bg = clr1,fg=clr3,command=clicked2)
